@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -9,21 +8,20 @@ import (
 )
 
 
-func handlesError(err error) {
+func HandlesError(err error) {
 	log.Fatal(err)
 }
 
-func MoveFile(initialPath, destination string) {
-	fmt.Printf("Moving the file ..... %v and to %v \n", initialPath, destination)
-	var name *string
-	*name = "Yosia"
-	fmt.Printf("%v \n", name)
+func Chdir(path string)  {
+	err := os.Chdir(path)
+	if err != nil {
+		HandlesError(err)
+	}
 }
-
 func GetCurrentDir() string {
 	success, err := os.Getwd()
 	if err != nil {
-		handlesError(err)
+		HandlesError(err)
 	}
 	return success
 }
@@ -32,7 +30,7 @@ func CreateDir(nameDir string, permission os.FileMode) bool {
 	err := os.Mkdir(nameDir, permission)
 
 	if err != nil && !os.IsExist(err) {
-		handlesError(err)
+		HandlesError(err)
 		return false
 	} else {
 		return true
@@ -42,7 +40,7 @@ func CreateDir(nameDir string, permission os.FileMode) bool {
 func ReadFile(name string) []byte {
 	file, err := os.ReadFile(name)
 	if err != nil && !os.IsExist(err) {
-		handlesError(err)
+		HandlesError(err)
 	}
 	return file
 }
@@ -50,7 +48,7 @@ func ReadFile(name string) []byte {
 func WriteFile(name string, dataToWrite []byte, permission os.FileMode) bool {
 	err := os.WriteFile(name, dataToWrite, permission)
 	if err != nil {
-		handlesError(err)
+		HandlesError(err)
 		return false
 	}
 	return true
@@ -61,7 +59,7 @@ func WriteFile(name string, dataToWrite []byte, permission os.FileMode) bool {
 func RenameFile(oldPath, newPath string) bool {
 	err := os.Rename(oldPath, newPath)
 	if err != nil && !os.IsNotExist(err) {
-		handlesError(err)
+		HandlesError(err)
 		return false
 	}
 	return true
@@ -70,7 +68,7 @@ func RenameFile(oldPath, newPath string) bool {
 func UserHomeDirectory() string {
 	dir, err := os.UserHomeDir()
 	if err != nil && !os.IsNotExist(err) {
-		handlesError(err)
+		HandlesError(err)
 	}
 	return dir
 }
@@ -78,7 +76,7 @@ func UserHomeDirectory() string {
 func GetDirs(workingDirectory string) []os.DirEntry {
 	dirs, err := os.ReadDir(workingDirectory)
 	if err != nil {
-		handlesError(err)
+		HandlesError(err)
 	}
 	return dirs
 }
