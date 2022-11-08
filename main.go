@@ -11,22 +11,25 @@ import (
 
 func main() {
 	// result := helpers.GetCurrentDir()
-	var groupUncategorized = true
+	var groupUncategorized bool
 	ungroupedFolderName := "Remained"
 	destination := "/home/yosia/Desktop/Projects/GroupBySize/"
-	var groupingNumbers = []float32{2, 4, 6}
+	workingDir := "./Play"
+	// 1 KBS, 2MBS , 3GBS
+	var groupingSize = 2
+	var groupingNumbers = []float64{2, 4, 6}
 	// sorting the grouping numbers in right order
 	var groupingFolders = []string{}
-	handleIndex := func(i int) float32 {
+	handleIndex := func(i int) float64 {
 		if i == 0 {
 			return 0
 		} else {
 			return groupingNumbers[i-1]
 		}
 	}
-	handleUnmoved := func (errorMsg, path string, response bool)  {
+	handleUnmoved := func(errorMsg, path string, response bool) {
 		if !response {
-			helpers.HandlesError(fmt.Errorf("%v %v",errorMsg, path))
+			helpers.HandlesError(fmt.Errorf("%v %v", errorMsg, path))
 		}
 	}
 
@@ -36,12 +39,12 @@ func main() {
 
 	}
 
-	moveFile := func (folderName, fileName, workingDirectory string)  {
+	moveFile := func(folderName, fileName, workingDirectory string) {
 		moved := helpers.RenameFile(helpers.JoinPath(workingDirectory, fileName), helpers.JoinPath(destination, folderName, fileName))
-		handleUnmoved("Failed to Move file", helpers.JoinPath(workingDirectory, fileName),  moved)
-	
+		handleUnmoved("Failed to Move file", helpers.JoinPath(workingDirectory, fileName), moved)
+
 	}
-	handleDir := func (file fs.DirEntry, folderName string)  {
+	handleDir := func(file fs.DirEntry, folderName, workingDirectory string) {
 		err := filepath.WalkDir(file.Name(), func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return nil
@@ -60,26 +63,34 @@ func main() {
 
 			}
 			if !d.IsDir() {
-				fmt.Println(path, "......")
 				moved := helpers.RenameFile(path, helpers.JoinPath(destination, folderName, path))
 				handleUnmoved("Failed to move", path, moved)
-				
+
 			}
 			return err
 		})
 		if err != nil {
 			helpers.HandlesError(err)
-
 		}
-		
+		// removing the empty directories 
+		size, _	 := helpers.DirSizes(helpers.JoinPath(workingDirectory, file.Name()))
+		if size == 0 {
+			// success := helpers.DeleteDirectoryTree(file)
+			success := helpers.DeleteDirectoryTree(file.Name())
+			if !success {
+				log.Fatal("Failed to delete tree")
+			}
+		}	
+
+
 	}
 	// appending the remaining
 	if groupUncategorized {
 		groupingFolders = append(groupingFolders, ungroupedFolderName)
 
 	}
-	folderSelector := func(size int64) (int, string) {
-		sizeMbs := helpers.SizeConverter(size, "mbs")
+	folderSelector := func(size int64, groupingSize int) (int, string) {
+		sizeMbs := helpers.SizeConverter(size, groupingSize, 3)
 		var index int
 		var folder string
 		for i, groupingNumber := range groupingNumbers {
@@ -92,13 +103,14 @@ func main() {
 		return index, folder
 	}
 	for _, folder := range groupingFolders {
+		helpers.Chdir(destination)
 		createdFolder := helpers.CreateDir(folder, helpers.RdWrAll)
 		if !createdFolder {
 			return
 		}
 	}
 	// // fmt.Printf("Data passed %v \n", result)
-	helpers.Chdir("./Play")
+	helpers.Chdir(workingDir)
 	workingDirectory := helpers.GetCurrentDir()
 	dirCreated := helpers.GetDirs(workingDirectory)
 	for _, file := range dirCreated {
@@ -107,8 +119,8 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
-			fmt.Printf("FileName: %v =>Size: %v \n", info.Name(), info.Size())
-			_, folderName := folderSelector(info.Size())
+			// fmt.Printf("FileName: %v =>Size: %v \n", info.Name(), info.Size())
+			_, folderName := folderSelector(info.Size(), groupingSize)
 			if folderName != "" {
 				moveFile(folderName, file.Name(), workingDirectory)
 			}
@@ -120,15 +132,27 @@ func main() {
 
 			dirPath := helpers.JoinPath(workingDirectory, file.Name())
 			size, _ := helpers.DirSizes(dirPath)
-			_, folderName := folderSelector(size)
+			_, folderName := folderSelector(size, groupingSize)
 			if folderName != "" {
-				handleDir(file, folderName)
+				handleDir(file, folderName, workingDirectory)
 			}
 			if groupUncategorized && (folderName == "") {
-				handleDir(file, ungroupedFolderName)
+				handleDir(file, ungroupedFolderName, workingDirectory)
 			}
 		}
 
+	}
+
+
+
+	// if the working directory is empty we delete it too
+	emptieDirectory, _ := helpers.DirSizes(workingDir)
+	if emptieDirectory == 0 {
+		// we delete the directory too
+		successfulDeletedTree := helpers.DeleteDirectoryTree(workingDir)
+		if !successfulDeletedTree {
+			log.Fatal("Failed to empty working Directory")
+		} 
 	}
 
 }
