@@ -128,3 +128,18 @@ func DirSizes(path string) (int64, error) {
 	return size, err
 }
 
+func DeleteDirectoryTree(path string)bool {
+	err := os.RemoveAll(path)
+	if err != nil {
+		HandlesError(err)
+	}
+	return true
+}
+
+func DeleteDirectory(path string) bool {
+	err := os.Remove(path)
+	if err != nil {
+		HandlesError(err)
+	}
+	return true
+}
