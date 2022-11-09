@@ -12,6 +12,8 @@ import (
 func main() {
 	// result := helpers.GetCurrentDir()
 	var groupUncategorized bool
+	// It's optional
+	var roundingPrecison = 3  
 	ungroupedFolderName := "Remained"
 	destination := "/home/yosia/Desktop/Projects/GroupBySize/"
 	workingDir := "./Play"
@@ -90,7 +92,8 @@ func main() {
 
 	}
 	folderSelector := func(size int64, groupingSize int) (int, string) {
-		sizeMbs := helpers.SizeConverter(size, groupingSize, 3)
+		sizeMbs := helpers.SizeConverter(size, groupingSize, roundingPrecison)
+		fmt.Println(sizeMbs, "Rounded")
 		var index int
 		var folder string
 		for i, groupingNumber := range groupingNumbers {
