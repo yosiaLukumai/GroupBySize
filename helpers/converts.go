@@ -1,19 +1,23 @@
 package helpers
-import "math"
+
+import (
+	"math"
+)
 
 // Func return the converted size of bytes in mbs or
 func SizeConverter(size int64, output, places int) float64 {
 	// by default it retures the mbs
 	// 1 ==> KB's 2 ==> MB's 3 ==> GB's 
 	var outputSize float64
+	var specificNumber float64 = 1024
 	if output == 1 {
-		outputSize = float64(size / 1024)
+		outputSize = (float64(size) / specificNumber)
 		return RoundUp(outputSize, places)
 	}else if output == 2 {
-		outputSize = float64(size / (1024 * 1024))
+		outputSize = (float64(size) / (specificNumber * specificNumber))
 		return RoundUp(outputSize, places)
 	}else if output == 3 {
-		outputSize = float64(size / (1024 * 1024 * 1024))
+		outputSize = float64(float64(size) / (specificNumber * specificNumber * specificNumber))
 		return RoundUp(outputSize, places)
 	} else {
 		return RoundUp(outputSize, places)
